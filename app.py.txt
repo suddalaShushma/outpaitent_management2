@@ -1,0 +1,59 @@
+from flask import Flask, render_template, request, redirect, url_for
+import sqlite3
+import qrcode
+import os
+
+app = Flask(__name__)
+
+# Ensure the static directory exists
+os.makedirs('static', exist_ok=True)
+
+# Connect to SQLite database
+def get_db_connection():
+    conn = sqlite3.connect('patient_database.db')
+    conn.row_factory = sqlite3.Row
+    return conn
+
+# Create table if it doesn't exist
+with get_db_connection() as conn:
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS patients (
+            patient_id INTEGER PRIMARY KEY,
+            name TEXT NOT NULL,
+            age INTEGER NOT NULL,
+            contact TEXT NOT NULL
+        )
+    ''')
+    conn.commit()
+
+@app.route('/')
+def index():
+    return render_template('registration.html')
+
+@app.route('/register', methods=['POST'])
+def register():
+    name = request.form['name']
+    age = request.form['age']
+    contact = request.form['contact']
+
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO patients (name, age, contact) VALUES (?, ?, ?)", (name, age, contact))
+        conn.commit()
+        patient_id = cursor.lastrowid
+
+    qr_code_filename = generate_qr_code(patient_id, name)
+    return render_template('registration_success.html', qr_code_filename=qr_code_filename)
+
+def generate_qr_code(patient_id, name):
+    data = f"Patient ID: {patient_id}\nName: {name}"
+    filename = f"static/patient_{patient_id}_qr_code.png"
+    qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_L, box_size=10, border=4)
+    qr.add_data(data)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    img.save(filename)
+    return filename
+
+if __name__ == '__main__':
+    app.run(debug=True)

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient List</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Patient List</h1>
+        <table class="table table-striped mt-4">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th>Contact</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for patient in patients %}
+                <tr>
+                    <td>{{ patient['patient_id'] }}</td>
+                    <td>{{ patient['name'] }}</td>
+                    <td>{{ patient['age'] }}</td>
+                    <td>{{ patient['contact'] }}</td>
+                    <td>
+                        <a href="/edit/{{ patient['patient_id'] }}" class="btn btn-warning btn-sm">Edit</a>
+                        <a href="/delete/{{ patient['patient_id'] }}" class="btn btn-danger btn-sm">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="text-center mt-4">
+            <a href="/" class="btn btn-primary">Register New Patient</a>
+        </div>
+    </div>
+</body>
+</html>
